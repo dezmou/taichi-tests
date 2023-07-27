@@ -29,14 +29,9 @@ const engine = async () => {
   // const n = 1000
   // const pixels = ti.Vector.field(4, ti.f32, [2 * n, n]);
 
-  const imgs = await Promise.all(Array.from({ length: 1 }).map(async (_, i) => {
+  const texs = await Promise.all(Array.from({ length: 40 }).map(async (_, i) => {
     const img = await loadImage(`./pic/${pad(i, 4)}.jpg`);
-    return img;
-  }))
-
-  const texs = await Promise.all(imgs.map(async (img) => {
     const tex = await ti.Texture.createFromHtmlImage(img);
-
     return tex;
   }))
 
@@ -53,7 +48,7 @@ const engine = async () => {
 
   const canv = document.getElementById('canv') as HTMLCanvasElement;
   let renderTarget = ti.canvasTexture(canv);
-  ti.addToKernelScope({ vertices, renderTarget, tex: texs[0] });
+    ti.addToKernelScope({ vertices, renderTarget, tex : texs});
 
   let render = ti.kernel(() => {
     ti.clearColor(renderTarget, [0.0, 0.5, 0.0, 1.0]);
@@ -67,11 +62,6 @@ const engine = async () => {
       let chien = clipSpace * [1.0, -1.0];
       //@ts-ignore
       ti.outputPosition([chien[0], chien[1], 0, 1]);
-
-      // gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
-
-
-      // ti.outputPosition([v.x, v.y + 0.0, 0.0, 1.0]);
       ti.outputVertex(v);
     }
     //@ts-ignore
@@ -79,28 +69,14 @@ const engine = async () => {
       //@ts-ignore
       let chien = vertices[0];
       //@ts-ignore
-      let texel = ti.textureSample(tex, f);
+      let texel = ti.textureSample(tex[0], f);
       //@ts-ignore
       ti.outputColor(renderTarget, texel);
-
-      //     // convert the rectangle from pixels to 0.0 to 1.0
-      //  vec2 zeroToOne = a_position / u_resolution;
-
-      //  // convert from 0->1 to 0->2
-      //  vec2 zeroToTwo = zeroToOne * 2.0;
-
-      //  // convert from 0->2 to -1->+1 (clipspace)
-      //  vec2 clipSpace = zeroToTwo - 1.0;
-
-      //     gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
-
-      //     // pass the texCoord to the fragment shader
-      //     // The GPU will interpolate this value between points.
-      //     v_texCoord = a_texCoord;
     }
   });
 
   // for (let i = 0; i < 100; i++) {
+  // chien = texs[35];
   await render()
   // await new Promise(r => requestAnimationFrame(r));
   // }
